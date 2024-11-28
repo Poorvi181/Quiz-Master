@@ -3,6 +3,7 @@ TITLE="Quizmaster"
 HEIGHT=650
 WIDTH=870
 timeleft=10
+is_game_over=False
 questions=[]
 questioncount=0
 questionindex=0
@@ -25,6 +26,7 @@ optionbox3.move_ip(20,450)
 optionbox4.move_ip(370,450)
 marqueemsg=""
 questionsfile="questions.txt"
+score=0
 def draw():
     screen.fill("black")
     screen.draw.filled_rect(marquee_box,"pink")
@@ -60,8 +62,51 @@ def readnextquestion():
     global questionindex
     questionindex+=1
     return questions.pop(0).split(",")
+def on_mouse_down(pos):
+    index=1
+    for box in optionboxes:
+        if box.collidepoint(pos):
+            if index is int(question[5]):
+                correctanswer()
+            else:
+                gameover()
+        index+=1
+    if skipbox.collidepoint(pos):
+        skipquestion()
 
 readquestionfile()
 question=readnextquestion()  
+
+def correctanswer():
+    global score,question,timeleft
+    score+=1
+    if questions:
+        question=readnextquestion()
+        timeleft=10
+    else:
+        gameover()
+
+def gameover():
+    global is_game_over,question,timeleft
+    message=f"Game over! You got {score} questions correct!"
+    question=[message,"-","-","-","-"]
+    timeleft=0
+    is_game_over=True
+
+def skipquestion():
+    global question,timeleft
+    if questions and not is_game_over:
+        question=readnextquestion()
+        timeleft=10
+    else:
+        gameover()
+
+def updatetimer():
+    global timeleft
+    if timeleft:
+        timeleft-=1
+    else:
+        gameover()
+clock.schedule_interval(updatetimer,1)
 pgzrun.go()
 
